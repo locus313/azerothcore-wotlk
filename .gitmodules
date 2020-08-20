@@ -13,3 +13,6 @@
 [submodule "modules/mod-individual-xp"]
 	path = modules/mod-individual-xp
 	url = https://github.com/locus313/mod-individual-xp.git
+[submodule "modules/mod-solo-lfg"]
+	path = modules/mod-solo-lfg
+	url = https://github.com/locus313/mod-solo-lfg.git
