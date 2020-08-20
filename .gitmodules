@@ -7,3 +7,6 @@
 [submodule "modules/mod-cfbg"]
 	path = modules/mod-cfbg
 	url = https://github.com/locus313/mod-cfbg.git
+[submodule "modules/mod-custom-login"]
+	path = modules/mod-custom-login
+	url = https://github.com/locus313/mod-custom-login.git
