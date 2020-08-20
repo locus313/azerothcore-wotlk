@@ -1,0 +1,3 @@
+[submodule "modules/mod-ah-bot"]
+	path = modules/mod-ah-bot
+	url = https://github.com/locus313/mod-ah-bot.git
