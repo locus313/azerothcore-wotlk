@@ -10,3 +10,6 @@
 [submodule "modules/mod-custom-login"]
 	path = modules/mod-custom-login
 	url = https://github.com/locus313/mod-custom-login.git
+[submodule "modules/mod-individual-xp"]
+	path = modules/mod-individual-xp
+	url = https://github.com/locus313/mod-individual-xp.git
