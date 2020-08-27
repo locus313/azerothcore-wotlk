@@ -99,3 +99,4 @@ local.properties
 !modules/mod-individual-xp
 !modules/mod-solo-lfg
 !modules/mod-transmog
+conf/dist/config.sh
