@@ -10,5 +10,5 @@ jobs:
       with:
         source_repo: "https://github.com/azerothcore/azerothcore-wotlk.git"
         source_branch: "master"
-        destination_repo: "https://${{ secrets.GH_USERNAME }}:${{ secrets.GH_TOKEN }}@github.com/locus313/azerothcore-wotlk.git"
+        destination_repo: "https://${{ secrets.GH_USERNAME }}:${{ secrets.GH_TOKEN }}@github.com/${{ secrets.GH_USERNAME }}/azerothcore-wotlk.git"
         destination_branch: "master"
