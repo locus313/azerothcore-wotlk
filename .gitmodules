@@ -1,0 +1,21 @@
+[submodule "modules/mod-ah-bot"]
+	path = modules/mod-ah-bot
+	url = https://github.com/locus313/mod-ah-bot.git
+[submodule "modules/mod-autobalance"]
+	path = modules/mod-autobalance
+	url = https://github.com/locus313/mod-autobalance.git
+[submodule "modules/mod-cfbg"]
+	path = modules/mod-cfbg
+	url = https://github.com/locus313/mod-cfbg.git
+[submodule "modules/mod-custom-login"]
+	path = modules/mod-custom-login
+	url = https://github.com/locus313/mod-custom-login.git
+[submodule "modules/mod-individual-xp"]
+	path = modules/mod-individual-xp
+	url = https://github.com/locus313/mod-individual-xp.git
+[submodule "modules/mod-solo-lfg"]
+	path = modules/mod-solo-lfg
+	url = https://github.com/locus313/mod-solo-lfg.git
+[submodule "modules/mod-transmog"]
+	path = modules/mod-transmog
+	url = https://github.com/locus313/mod-transmog.git
