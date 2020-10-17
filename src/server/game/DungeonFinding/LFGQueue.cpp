@@ -289,7 +289,7 @@ namespace lfg
             return LFG_INCOMPATIBLES_MULTIPLE_LFG_GROUPS;
 
         // Group with less that MAXGROUPSIZE members always compatible
-        if (check.size() == 1 && numPlayers < MAXGROUPSIZE)
+        if (!sLFGMgr->IsSoloLFG() && numPlayers != MAXGROUPSIZE) //solo lfg
         {
             LfgQueueDataContainer::iterator itQueue = QueueDataStore.find(check.front());
             LfgRolesMap roles = itQueue->second.roles;
@@ -299,7 +299,7 @@ namespace lfg
             //UpdateBestCompatibleInQueue(itQueue, strGuids);
             AddToCompatibles(strGuids);
             if (roleCheckResult && roleCheckResult <= 15)
-                foundMask |= ( (((uint64)1) << (roleCheckResult - 1)) | (((uint64)1) << (16 + roleCheckResult - 1)) | (((uint64)1) << (32 + roleCheckResult - 1)) | (((uint64)1) << (48 + roleCheckResult - 1)) );
+                foundMask |= ( (((uint64)1)<<(roleCheckResult-1)) | (((uint64)1)<<(16+roleCheckResult-1)) | (((uint64)1)<<(32+roleCheckResult-1)) | (((uint64)1)<<(48+roleCheckResult-1)) );
             return LFG_COMPATIBLES_WITH_LESS_PLAYERS;
         }
 
@@ -385,8 +385,23 @@ namespace lfg
             LFGMgr::CheckGroupRoles(proposalRoles);          // assing new roles
         }
 
+        if (proposalDungeons.empty())
+            return LFG_INCOMPATIBLES_NO_DUNGEONS;
+        }
+        else
+        {
+            uint64 gguid = check.front();
+            const LfgQueueData &queue = QueueDataStore[gguid];
+            proposalDungeons = queue.dungeons;
+            proposalRoles = queue.roles;
+            LFGMgr::CheckGroupRoles(proposalRoles);          // assing new roles
+        }
+
         // Enough players?
-        if (numPlayers != MAXGROUPSIZE)
+        if (!sLFGMgr->IsSoloLFG() && numPlayers != MAXGROUPSIZE) //solo  lfg
+        {
+            strGuids.addRoles(proposalRoles);
+            for (uint8 i=0; i<5 && check.guid[i]; ++i)
         {
             strGuids.addRoles(proposalRoles);
             for (uint8 i = 0; i < 5 && check.guid[i]; ++i)
