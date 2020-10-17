@@ -27,15 +27,10 @@
 namespace lfg
 {
 
-    LFGMgr::LFGMgr(): m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK)), m_isSoloLFG(false)
+    LFGMgr::LFGMgr(): m_lfgProposalId(1), m_options(sWorld->getIntConfig(CONFIG_LFG_OPTIONSMASK))
     {
         new LFGPlayerScript();
         new LFGGroupScript();
-
-        for (uint8 team = 0; team < 2; ++team)
-        {
-            new LFGPlayerScript();
-            new LFGGroupScript();
 
         for (uint8 team = 0; team < 2; ++team)
         {
@@ -1613,8 +1608,6 @@ namespace lfg
        @param[in]     accept Player answer
     */
     void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
-      
-    if (!sLFGMgr->IsSoloLFG() && !allAnswered)
     {
         // Check if the proposal exists
         LfgProposalContainer::iterator itProposal = ProposalsStore.find(proposalId);
@@ -2663,11 +2656,6 @@ namespace lfg
                 randomDungeons.insert(dungeon.Entry());
         }
         return randomDungeons;
-    }
-      
-    void LFGMgr::ToggleSoloLFG()
-    {
-        m_isSoloLFG = !m_isSoloLFG;
     }
 
 } // namespace lfg
