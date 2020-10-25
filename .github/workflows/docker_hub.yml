@@ -1,4 +1,4 @@
-name: Docker Hub
+name: Publish to Docker Hub
 
 on:
   push:
@@ -11,20 +11,6 @@ on:
       - docker-hub
 
 jobs:
-  docker-build:
-    strategy:
-      fail-fast: true
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure
-        run: |
-          docker --version
-          docker-compose --version
-      - name: Build
-        run: |
-          ./bin/acore-docker-build-no-scripts
-
   docker-worldserver:
     strategy:
       fail-fast: true
@@ -42,15 +28,17 @@ jobs:
           docker-compose --version
       - name: Build
         run: |
-          docker build -t azerothcore-wotlk-ac-worldserver -f docker/worldserver/Dockerfile docker/worldserver
+          docker build -t ${{ secrets.WORLDSERVER_REPO }} -f docker/worldserver/Dockerfile docker/worldserver
       - name: Tags
+        if: success()
         run: |
-         docker tag azerothcore-wotlk-ac-worldserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:${{ github.sha }}
-         docker tag azerothcore-wotlk-ac-worldserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:latest
+         docker tag ${{ secrets.WORLDSERVER_REPO }} ${{ secrets.DOCKER_USER }}/${{ secrets.WORLDSERVER_REPO }}:${{ github.sha }}
+         docker tag ${{ secrets.WORLDSERVER_REPO }} ${{ secrets.DOCKER_USER }}/${{ secrets.WORLDSERVER_REPO }}:latest
       - name: Push
+        if: success()
         run: |
-         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:${{ github.sha }}
-         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:latest
+         docker push ${{ secrets.DOCKER_USER }}/${{ secrets.WORLDSERVER_REPO }}:${{ github.sha }}
+         docker push ${{ secrets.DOCKER_USER }}/${{ secrets.WORLDSERVER_REPO }}:latest
  
   docker-authserver:
     strategy:
@@ -69,15 +57,17 @@ jobs:
           docker-compose --version
       - name: Build
         run: |
-          docker build -t azerothcore-wotlk-ac-authserver -f docker/authserver/Dockerfile docker/authserver
+          docker build -t ${{ secrets.AUTHSERVER_REPO }} -f docker/authserver/Dockerfile docker/authserver
       - name: Tags
+        if: success()
         run: |
-         docker tag azerothcore-wotlk-ac-authserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:${{ github.sha }}
-         docker tag azerothcore-wotlk-ac-authserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:latest
+         docker tag ${{ secrets.AUTHSERVER_REPO }} ${{ secrets.DOCKER_USER }}/${{ secrets.AUTHSERVER_REPO }}:${{ github.sha }}
+         docker tag ${{ secrets.AUTHSERVER_REPO }} ${{ secrets.DOCKER_USER }}/${{ secrets.AUTHSERVER_REPO }}:latest
       - name: Push
+        if: success()
         run: |
-         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:${{ github.sha }}
-         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:latest
+         docker push ${{ secrets.DOCKER_USER }}/${{ secrets.AUTHSERVER_REPO }}:${{ github.sha }}
+         docker push ${{ secrets.DOCKER_USER }}/${{ secrets.AUTHSERVER_REPO }}:latest
 
   docker-database:
     strategy:
@@ -96,12 +86,14 @@ jobs:
           docker-compose --version
       - name: Build
         run: |
-          docker build -t azerothcore-wotlk-ac-database -f docker/database/Dockerfile .
+          docker build -t ${{ secrets.DATABASE_REPO }} -f docker/database/Dockerfile .
       - name: Tags
+        if: success()
         run: |
-         docker tag azerothcore-wotlk-ac-database ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-database:${{ github.sha }}
-         docker tag azerothcore-wotlk-ac-database ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-database:latest
+         docker tag ${{ secrets.DATABASE_REPO }} ${{ secrets.DOCKER_USER }}/${{ secrets.DATABASE_REPO }}:${{ github.sha }}
+         docker tag ${{ secrets.DATABASE_REPO }} ${{ secrets.DOCKER_USER }}/${{ secrets.DATABASE_REPO }}:latest
       - name: Push
+        if: success()
         run: |
-         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-database:${{ github.sha }}
-         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-database:latest
+         docker push ${{ secrets.DOCKER_USER }}/${{ secrets.DATABASE_REPO }}:${{ github.sha }}
+         docker push ${{ secrets.DOCKER_USER }}/${{ secrets.DATABASE_REPO }}:latest
