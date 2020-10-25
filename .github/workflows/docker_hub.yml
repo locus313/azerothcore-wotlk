@@ -31,27 +31,53 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+           username: ${{ secrets.DOCKER_USER }}
+           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Configure
         run: |
           docker --version
           docker-compose --version
       - name: Build
         run: |
-          docker build -t azerothcore/worldserver -f docker/worldserver/Dockerfile docker/worldserver
-
+          docker build -t azerothcore-wotlk-ac-worldserver -f docker/worldserver/Dockerfile docker/worldserver
+      - name: Tags
+        run: |
+         docker tag azerothcore-wotlk-ac-worldserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:${{ github.sha }}
+         docker tag azerothcore-wotlk-ac-worldserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:latest
+      - name: Push
+        run: |
+         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:${{ github.sha }}
+         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-worldserver:latest
+ 
   docker-authserver:
     strategy:
       fail-fast: true
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Docker login
+        uses: docker/login-action@v1
+        with:
+           username: ${{ secrets.DOCKER_USER }}
+           password: ${{ secrets.DOCKER_TOKEN }}
       - name: Configure
         run: |
           docker --version
           docker-compose --version
       - name: Build
         run: |
-          docker build -t azerothcore/authserver -f docker/authserver/Dockerfile docker/authserver
+          docker build -t azerothcore-wotlk-ac-authserver -f docker/authserver/Dockerfile docker/authserver
+      - name: Tags
+        run: |
+         docker tag azerothcore-wotlk-ac-authserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:${{ github.sha }}
+         docker tag azerothcore-wotlk-ac-authserver ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:latest
+      - name: Push
+        run: |
+         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:${{ github.sha }}
+         docker push ${{ secrets.DOCKER_USER }}/azerothcore-wotlk-ac-authserver:latest
 
   docker-database:
     strategy:
