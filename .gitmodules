@@ -19,3 +19,6 @@
 [submodule "modules/mod-transmog"]
 	path = modules/mod-transmog
 	url = https://github.com/locus313/mod-transmog.git
+[submodule "modules/mod-random-enchants"]
+	path = modules/mod-random-enchants
+	url = https://github.com/locus313/mod-random-enchants.git
