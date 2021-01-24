@@ -18,6 +18,16 @@ jobs:
         with:
           token: ${{ secrets.GH_TOKEN }}
           submodules: recursive
+      - name: Apply core patch
+        run: git apply modules/mod-solo-lfg/lfg-solo.patch
+      - name: Check if docker patch applies
+        id: docker_patch_check
+        working-directory: ./modules/mod-solo-lfg
+        run: git apply docker.patch -R --check
+      - name: Apply docker patch
+        working-directory: ./modules/mod-solo-lfg
+        if: steps.docker_patch_check.outcome == 'failure'
+        run: git apply docker.patch
       - name: Configure
         run: |
           docker --version
