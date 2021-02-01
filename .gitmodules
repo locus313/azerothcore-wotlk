@@ -25,6 +25,3 @@
 [submodule "modules/mod-auto-revive"]
 	path = modules/mod-auto-revive
 	url = https://github.com/locus313/mod-auto-revive.git
-[submodule "modules/mod-crossfaction-instances"]
-	path = modules/mod-crossfaction-instances
-	url = https://gitlab.com/azerothcore_barbz/modules/mod-crossfaction-instances.git
