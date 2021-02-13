@@ -46,7 +46,7 @@ bool ChaseMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
     Creature* cOwner = owner->ToCreature();
 
     // the owner might be unable to move (rooted or casting), or we have lost the target, pause movement
-    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || HasLostTarget(owner) || (cOwner && owner->ToCreature()->IsMovementPreventedByCasting()))
+    if (owner->HasUnitState(UNIT_STATE_NOT_MOVE) || HasLostTarget(owner) || (cOwner && cOwner->IsMovementPreventedByCasting()))
     {
         i_path = nullptr;
         owner->StopMoving();
@@ -113,9 +113,7 @@ bool ChaseMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
 
     _lastTargetPosition = i_target->GetPosition();
 
-    bool hasMoveState = owner->HasUnitState(UNIT_STATE_CHASE_MOVE) || owner->HasUnitState(UNIT_STATE_FOLLOW_MOVE);
-
-    if (PositionOkay(owner, target, maxRange, angle) && !hasMoveState)
+    if (PositionOkay(owner, target, maxRange, angle) && !owner->HasUnitState(UNIT_STATE_CHASE_MOVE))
         return true;
 
     bool moveToward = !owner->IsInDist(target, maxRange);
@@ -128,6 +126,7 @@ bool ChaseMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
         {
             cOwner->SetCannotReachTarget(true);
             cOwner->StopMoving();
+            i_path = nullptr;
             return true;
         }
     }
@@ -146,8 +145,6 @@ bool ChaseMovementGenerator<T>::DoUpdate(T* owner, uint32 time_diff)
     }
     else
     {
-        if (target->GetTypeId() == TYPEID_PLAYER)
-            shortenPath = false;
         // otherwise, we fall back to nearpoint finding
         target->GetNearPoint(owner, x, y, z, (moveToward ? maxTarget : minTarget) - hitboxSum, 0, angle ? target->ToAbsoluteAngle(angle->RelativeAngle) : target->GetAngle(owner));
         shortenPath = false;
@@ -238,7 +235,7 @@ bool FollowMovementGenerator<T>::PositionOkay(T* owner, Unit* target, float rang
     if (owner->GetExactDistSq(target) > G3D::square(owner->GetCombatReach() + target->GetCombatReach() + range))
         return false;
 
-    return !owner->IsPet() || !angle || angle->IsAngleOkay(target->GetRelativeAngle(owner));
+    return !owner->IsPet() || !angle || angle->IsAngleOkay(target->GetRelativeAngle(owner)); // need to check - dont think we need !pet exception here because there are scripts with MoveFollow that require angle
 }
 
 template<class T>
