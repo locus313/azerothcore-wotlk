@@ -22,6 +22,3 @@
 [submodule "modules/mod-random-enchants"]
 	path = modules/mod-random-enchants
 	url = https://github.com/locus313/mod-random-enchants.git
-[submodule "modules/mod-auto-revive"]
-	path = modules/mod-auto-revive
-	url = https://github.com/locus313/mod-auto-revive.git
