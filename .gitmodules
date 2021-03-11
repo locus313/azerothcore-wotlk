@@ -22,3 +22,6 @@
 [submodule "modules/mod-random-enchants"]
 	path = modules/mod-random-enchants
 	url = https://github.com/locus313/mod-random-enchants.git
+[submodule "modules/mod-gain-honor-guard"]
+	path = modules/mod-gain-honor-guard
+	url = https://github.com/locus313/mod-gain-honor-guard.git
