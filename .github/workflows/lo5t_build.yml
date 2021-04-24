@@ -34,4 +34,4 @@ jobs:
           docker-compose --version
       - name: Build
         run: |
-          ./bin/acore-docker-build
+          docker-compose --profile all build
