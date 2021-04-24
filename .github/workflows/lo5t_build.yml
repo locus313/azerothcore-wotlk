@@ -1,0 +1,82 @@
+name: lo5t-build
+on:
+  push:
+    branches:
+      - '**'         # matches every branch
+      - '!master'   # excludes master
+      - '!dev-staging'   # excludes dev-staging
+  pull_request:
+
+jobs:
+  docker-build:
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-20.04
+    if: github.repository == 'locus313/azerothcore-wotlk'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          submodules: recursive
+      - name: Apply core patch
+        run: git apply modules/mod-solo-lfg/lfg-solo.patch
+      - name: Check if docker patch applies
+        id: docker_patch_check
+        working-directory: ./modules/mod-solo-lfg
+        run: git apply docker.patch -R --check
+      - name: Apply docker patch
+        working-directory: ./modules/mod-solo-lfg
+        if: steps.docker_patch_check.outcome == 'failure'
+        run: git apply docker.patch
+      - name: Configure
+        run: |
+          docker --version
+          docker-compose --version
+      - name: Build
+        run: |
+          ./bin/acore-docker-build-no-scripts
+
+  docker-worldserver:
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-20.04
+    if: github.repository == 'locus313/azerothcore-wotlk'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          docker --version
+          docker-compose --version
+      - name: Build
+        run: |
+          docker build -t azerothcore/worldserver -f docker/worldserver/Dockerfile docker/worldserver
+
+  docker-authserver:
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-20.04
+    if: github.repository == 'locus313/azerothcore-wotlk'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          docker --version
+          docker-compose --version
+      - name: Build
+        run: |
+          docker build -t azerothcore/authserver -f docker/authserver/Dockerfile docker/authserver
+
+  docker-database:
+    strategy:
+      fail-fast: true
+    runs-on: ubuntu-20.04
+    if: github.repository == 'locus313/azerothcore-wotlk'
+    steps:
+      - uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          docker --version
+          docker-compose --version
+      - name: Build
+        run: |
+          docker build -t azerothcore/database -f docker/database/Dockerfile .
