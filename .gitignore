@@ -88,6 +88,7 @@ local.properties
 #  !modules/yourmodule
 #
 # ==================
+!/env/docker/etc/modules
 !modules/mod-ah-bot
 !modules/mod-autobalance
 !modules/mod-cfbg
