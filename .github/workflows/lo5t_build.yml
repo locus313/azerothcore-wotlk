@@ -32,51 +32,9 @@ jobs:
         run: |
           docker --version
           docker-compose --version
+      - name: client-data
+        run: |
+          source ./acore.sh docker client-data
       - name: Build
         run: |
-          ./bin/acore-docker-build-no-scripts
-
-  docker-worldserver:
-    strategy:
-      fail-fast: true
-    runs-on: ubuntu-20.04
-    if: github.repository == 'locus313/azerothcore-wotlk'
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure
-        run: |
-          docker --version
-          docker-compose --version
-      - name: Build
-        run: |
-          docker build -t azerothcore/worldserver -f docker/worldserver/Dockerfile docker/worldserver
-
-  docker-authserver:
-    strategy:
-      fail-fast: true
-    runs-on: ubuntu-20.04
-    if: github.repository == 'locus313/azerothcore-wotlk'
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure
-        run: |
-          docker --version
-          docker-compose --version
-      - name: Build
-        run: |
-          docker build -t azerothcore/authserver -f docker/authserver/Dockerfile docker/authserver
-
-  docker-database:
-    strategy:
-      fail-fast: true
-    runs-on: ubuntu-20.04
-    if: github.repository == 'locus313/azerothcore-wotlk'
-    steps:
-      - uses: actions/checkout@v2
-      - name: Configure
-        run: |
-          docker --version
-          docker-compose --version
-      - name: Build
-        run: |
-          docker build -t azerothcore/database -f docker/database/Dockerfile .
+          source ./acore.sh docker build
