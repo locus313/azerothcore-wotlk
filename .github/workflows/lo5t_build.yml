@@ -32,6 +32,9 @@ jobs:
         run: |
           docker --version
           docker-compose --version
+      - name: client-data
+        run: |
+          source ./acore.sh docker client-data
       - name: Build
         run: |
-          docker-compose --profile all build
+          source ./acore.sh docker build
