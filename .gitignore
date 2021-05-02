@@ -88,3 +88,11 @@ local.properties
 #  !modules/yourmodule
 #
 # ==================
+!/env/docker/etc/modules
+!modules/mod-ah-bot
+!modules/mod-autobalance
+!modules/mod-cfbg
+!modules/mod-custom-login
+!modules/mod-individual-xp
+!modules/mod-solo-lfg
+!modules/mod-transmog
