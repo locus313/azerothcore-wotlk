@@ -5,6 +5,9 @@ on:
       - 'Lo5t'         # matches every branch
   pull_request:
 
+env:
+  COMPILER: clang
+
 jobs:
   build:
     strategy:
