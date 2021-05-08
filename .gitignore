@@ -92,6 +92,7 @@ local.properties
 #  !modules/yourmodule
 #
 # ==================
+!/env/dist/etc/modules
 !/env/docker/etc/modules
 !modules/mod-ah-bot
 !modules/mod-autobalance
