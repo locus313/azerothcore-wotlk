@@ -24,7 +24,7 @@ jobs:
       - name: Cache
         uses: actions/cache@v2
         with:
-          path: /home/runner/.ccache
+          path: var/ccache
           key: ccache:ubuntu-20.04:${{ github.ref }}:${{ github.sha }}
           restore-keys: |
             ccache:ubuntu-20.04:${{ github.ref }}
