@@ -15,6 +15,7 @@
 #include "Opcodes.h"
 #include "PacketLog.h"
 #include "Player.h"
+#include "Realm.h"
 #include "ScriptMgr.h"
 #include "SharedDefines.h"
 #include "Util.h"
@@ -147,7 +148,7 @@ WorldSocket::WorldSocket(void): WorldHandler(),
     m_RecvWPct(0), m_RecvPct(), m_Header(sizeof (ClientPktHeader)),
     m_OutBuffer(0), m_OutBufferSize(65536), m_OutActive(false)
 {
-    acore::Crypto::GetRandomBytes(m_Seed);
+    Acore::Crypto::GetRandomBytes(m_Seed);
 
     reference_counting_policy().value (ACE_Event_Handler::Reference_Counting_Policy::ENABLED);
 
@@ -292,7 +293,7 @@ int WorldSocket::open(void* a)
     WorldPacket packet (SMSG_AUTH_CHALLENGE, 24);
     packet << uint32(1);                                    // 1...31
     packet.append(m_Seed);
-    packet.append(acore::Crypto::GetRandomBytes<32>()); // new encryption seeds
+    packet.append(Acore::Crypto::GetRandomBytes<32>()); // new encryption seeds
 
     if (SendPacket(packet) == -1)
         return -1;
@@ -527,11 +528,10 @@ int WorldSocket::handle_input_header(void)
     EndianConvertReverse(header.size);
     EndianConvert(header.cmd);
 
-    if ((header.size < 4) || (header.size > 10240) || (header.cmd  > 10240))
+    if ((header.size < 4) || (header.size > 10240) || (header.cmd > 10240))
     {
-        Player* _player = m_Session ? m_Session->GetPlayer() : nullptr;
-        LOG_ERROR("server", "WorldSocket::handle_input_header(): client (account: %u, char [%s, name: %s]) sent malformed packet (size: %d, cmd: %d)",
-            m_Session ? m_Session->GetAccountId() : 0, _player ? _player->GetGUID().ToString().c_str() : "", _player ? _player->GetName().c_str() : "<none>", header.size, header.cmd);
+        LOG_ERROR("server", "WorldSocket::handle_input_header(): client (%s) sent malformed packet (size: %hd, cmd: %d)",
+            GetRemoteAddress().c_str(), header.size, header.cmd);
 
         errno = EINVAL;
         return -1;
@@ -706,9 +706,9 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     ASSERT(new_pct);
 
     // manage memory ;)
-    std::unique_ptr<WorldPacket> aptr (new_pct);
+    std::unique_ptr<WorldPacket> aptr(new_pct);
 
-    const uint16 opcode = new_pct->GetOpcode();
+    OpcodeClient opcode = static_cast<OpcodeClient>(aptr->GetOpcode());
 
     if (closing_)
         return -1;
@@ -749,7 +749,9 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     }
     catch (ByteBufferException const&)
     {
-        LOG_ERROR("server", "WorldSocket::ProcessIncoming ByteBufferException occured while parsing an instant handled packet (opcode: %u) from client %s, accountid=%i. Disconnected client.", opcode, GetRemoteAddress().c_str(), m_Session ? m_Session->GetAccountId() : -1);
+        LOG_ERROR("server", "WorldSocket::ProcessIncoming ByteBufferException occured while parsing an instant handled packet (opcode: %u) from client %s, accountid=%u. Disconnected client.",
+            aptr->GetOpcode(), GetRemoteAddress().c_str(), m_Session ? m_Session->GetAccountId() : 0);
+
         if (sLog->ShouldLog("network", LogLevel::LOG_LEVEL_DEBUG))
         {
             LOG_DEBUG("network", "Dumping error causing packet:");
@@ -760,6 +762,13 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
     }
 
     std::lock_guard<std::mutex> guard(m_SessionLock);
+
+    OpcodeHandler const* handler = opcodeTable[opcode];
+    if (!handler)
+    {
+        LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(aptr->GetOpcode())).c_str(), m_Session->GetPlayerInfo().c_str());
+        return -1;
+    }
 
     if (m_Session != nullptr)
     {
@@ -776,20 +785,20 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
         return 0;
     }
 
-    LOG_ERROR("server", "WorldSocket::ProcessIncoming: Client not authed opcode = %u", uint32(opcode));
+    LOG_ERROR("server", "WorldSocket::ProcessIncoming: Client not authed opcode = %u", aptr->GetOpcode());
     return -1;
 }
 
 int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 {
     // NOTE: ATM the socket is singlethread, have this in mind ...
-    uint32 loginServerID, loginServerType, regionID, battlegroupID, realm;
+    uint32 loginServerID, loginServerType, regionID, battlegroupID, realmid;
     uint64 DosResponse;
     uint32 BuiltNumberClient;
     std::string accountName;
     WorldPacket packet, SendAddonPacked;
     std::array<uint8, 4> clientSeed;
-    acore::Crypto::SHA1::Digest digest;
+    Acore::Crypto::SHA1::Digest digest;
 
     if (sWorld->IsClosed())
     {
@@ -809,7 +818,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     recvPacket.read(clientSeed);
     recvPacket >> regionID;
     recvPacket >> battlegroupID;
-    recvPacket >> realm;
+    recvPacket >> realmid;
     recvPacket >> DosResponse;
     recvPacket.read(digest);
 
@@ -821,7 +830,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     //         0           1        2       3        4            5         6       7          8      9      10
     // SELECT id, sessionkey, last_ip, locked, lock_country, expansion, mutetime, locale, recruiter, os, totaltime FROM account WHERE username = ?
     auto* stmt = LoginDatabase.GetPreparedStatement(LOGIN_SEL_ACCOUNT_INFO_BY_NAME);
-    stmt->setInt32(0, int32(realmID));
+    stmt->setInt32(0, int32(realm.Id.Realm));
     stmt->setString(1, accountName);
 
     PreparedQueryResult result = LoginDatabase.Query(stmt);
@@ -848,11 +857,10 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_LAST_ATTEMPT_IP);
     stmt->setString(0, address);
     stmt->setString(1, accountName);
-
     LoginDatabase.Execute(stmt);
     // This also allows to check for possible "hack" attempts on account
 
-     // even if auth credentials are bad, try using the session key we have - client cannot read auth response error without it
+    // even if auth credentials are bad, try using the session key we have - client cannot read auth response error without it
     m_Crypt.Init(account.SessionKey);
 
     // First reject the connection if packet contains invalid data or realm state doesn't allow logging in
@@ -867,14 +875,14 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
         return -1;
     }
 
-    if (realm != realmID)
+    if (realmid != realm.Id.Realm)
     {
         packet.Initialize(SMSG_AUTH_RESPONSE, 1);
         packet << uint8(REALM_LIST_REALM_NOT_FOUND);
         SendPacket(packet);
 
         LOG_ERROR("server", "WorldSocket::HandleAuthSession: Client %s requested connecting with realm id %u but this realm has id %u set in config.",
-            address.c_str(), realm, realmID);
+            address.c_str(), realmid, realm.Id.Realm);
         sScriptMgr->OnFailedAccountLogin(account.Id);
         return -1;
     }
@@ -894,7 +902,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     // Check that Key and account name are the same on client and server
     uint8 t[4] = { 0x00, 0x00, 0x00, 0x00 };
 
-    acore::Crypto::SHA1 sha;
+    Acore::Crypto::SHA1 sha;
     sha.UpdateData(accountName);
     sha.UpdateData(t);
     sha.UpdateData(clientSeed);
